@@ -18,12 +18,15 @@ NSString * const kYelpToken = @"g3TcGKOZKSmEDWmzRvhJX4WGxeqYij4w";
 NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 
-@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate>
+@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (nonatomic, strong) YelpClient *client;
 @property (nonatomic, strong) FiltersViewController *fvc;
 @property (nonatomic, strong) NSArray *businesses;
+@property (nonatomic, strong) UISearchBar *searchBar;
+@property (nonatomic, strong) NSMutableDictionary *searchFilters;
+@property (nonatomic, strong) NSString *queryTerm;
 
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params;
 
@@ -41,8 +44,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.fvc = [[FiltersViewController alloc] init];
         // Set myself as the receiver of the filter change event
         self.fvc.delegate = self;
-        
-        [self fetchBusinessesWithQuery:@"Restaurants" params:nil];
+        self.queryTerm = self.searchBar.text = @"Restaurants";
+        self.searchFilters = nil;
+        [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
     }
     return self;
 }
@@ -61,6 +65,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.tableView.estimatedRowHeight = 90;
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
+    
+    self.navigationItem.titleView = self.searchBar = [[UISearchBar alloc] init];
+    self.searchBar.delegate = self;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -91,9 +98,43 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 #pragma mark - Filter delegate methods
 
 - (void)filtersViewController:(FiltersViewController *)filterViewController didChangeFilters:(NSDictionary *)filters {
-    NSLog(@"filter change %@", filters);
-    [self fetchBusinessesWithQuery:@"Restaurants" params:filters];
+    if (!self.searchFilters) {
+        self.searchFilters = [NSMutableDictionary dictionary];
+    }
+    self.searchFilters = [filters mutableCopy];
+    NSLog(@"filtering search %@", self.queryTerm);
+    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
+
+#pragma mark - search bar control
+
+// Search bar event listener
+- (void)searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)text
+{
+}
+
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar {
+    [searchBar sizeToFit];
+    [searchBar setShowsCancelButton:YES animated:YES];
+    return YES;
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    NSLog(@"search with %@", searchBar.text);
+    self.queryTerm = searchBar.text;
+    [searchBar setShowsCancelButton:NO animated:YES];
+    [searchBar resignFirstResponder];
+    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
+}
+
+// Reset search bar state after cancel button clicked
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:NO animated:YES];
+    [searchBar resignFirstResponder];
+    searchBar.text = @"";
+    [searchBar sizeToFit];
+}
+
 
 #pragma mark - private methods
 
