@@ -8,9 +8,11 @@
 
 #import "FiltersViewController.h"
 #import "FilterCell.h"
+#import "CheckBoxCell.h"
 #import "PlaceHolderCell.h"
+#import "Utils.h"
 
-@interface FiltersViewController () <UITableViewDataSource, UITableViewDelegate, FilterCellDelegate>
+@interface FiltersViewController () <UITableViewDataSource, UITableViewDelegate, FilterCellDelegate, CheckBoxCellDelegate>
 
 @property (nonatomic, strong) NSArray *sectionTitles;
 
@@ -55,13 +57,17 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cancel-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Apply" style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
+//    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"checkmark-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
+    
+//    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Apply" style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
     
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     [self.tableView registerNib:[UINib nibWithNibName:@"FilterCell" bundle:nil] forCellReuseIdentifier:@"FilterCell"];
+    [self.tableView registerNib:[UINib nibWithNibName:@"CheckBoxCell" bundle:nil] forCellReuseIdentifier:@"CheckBoxCell"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PlaceHolderCell" bundle:nil] forCellReuseIdentifier:@"PlaceHolderCell"];
 
     self.showFullCategories = NO;
@@ -70,6 +76,12 @@
     
     self.tableView.rowHeight = 40;
     
+    UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    self.navigationController.navigationBar.tintColor = myColor;
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{NSForegroundColorAttributeName : myColor}];
+    
+    self.title = @"Filters";
     //self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
 }
@@ -79,6 +91,10 @@
     self.showFullCategories = NO;
     self.showFullDistanceChoices = NO;
     self.showFullSortModes = NO;
+    UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    self.navigationController.navigationBar.tintColor = myColor;
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{NSForegroundColorAttributeName : myColor}];
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -93,7 +109,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Filter cell delegate methods
+#pragma mark - Cell delegate methods
 
 - (void)filterCell:(FilterCell *)filterCell didUpdateValue:(BOOL)value {
     NSIndexPath *indexPath = [self.tableView indexPathForCell:filterCell];
@@ -102,6 +118,22 @@
         case 0:
             self.dealsFilter = !self.dealsFilter;
             break;
+        case 3:
+            if (value) {
+                [self.selectedCategories addObject:self.categories[indexPath.row]];
+            } else {
+                [self.selectedCategories removeObject:self.categories[indexPath.row]];
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)checkBoxCell:(CheckBoxCell *)checkBoxCell didUpdateValue:(BOOL)value {
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:checkBoxCell];
+    
+    switch (indexPath.section) {
         case 1:
             if (value) {
                 self.radiusFilterIndex = indexPath.row;
@@ -120,18 +152,10 @@
             self.showFullSortModes = NO;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
             break;
-        case 3:
-            if (value) {
-                [self.selectedCategories addObject:self.categories[indexPath.row]];
-            } else {
-                [self.selectedCategories removeObject:self.categories[indexPath.row]];
-            }
-            break;
         default:
             break;
     }
 }
-
 
 #pragma mark - Table methods
 
@@ -190,40 +214,43 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    FilterCell *cell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
-    cell.delegate = self;
 //    [cell setBackgroundColor:[UIColor groupTableViewBackgroundColor]];
+    FilterCell *filterCell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
+    CheckBoxCell *checkBoxCell = [tableView dequeueReusableCellWithIdentifier:@"CheckBoxCell"];
+    checkBoxCell.delegate = self;
+    filterCell.delegate = self;
+
     switch (indexPath.section) {
         case 0: // Most Popular
-            cell.titleLabel.text = self.mostPopularChoices[indexPath.row][@"name"];
-            cell.on = NO;
-            break;
+            filterCell.titleLabel.text = self.mostPopularChoices[indexPath.row][@"name"];
+            filterCell.on = NO;
+            return filterCell;
         case 1:
             if (self.showFullDistanceChoices) {
-                cell.titleLabel.text = self.distanceChoices[indexPath.row][@"name"];
+                checkBoxCell.titleLabel.text = self.distanceChoices[indexPath.row][@"name"];
                 if (self.radiusFilterIndex == indexPath.row) {
-                    cell.on = YES;
+                    checkBoxCell.checked = YES;
                 } else {
-                    cell.on = NO;
+                    checkBoxCell.checked = NO;
                 }
             } else {
-                cell.titleLabel.text = self.distanceChoices[self.radiusFilterIndex][@"name"];
-                cell.on = YES;
+                checkBoxCell.titleLabel.text = self.distanceChoices[self.radiusFilterIndex][@"name"];
+                checkBoxCell.checked = YES;
             }
-            break;
+            return checkBoxCell;
         case 2:
             if (self.showFullSortModes) {
-                cell.titleLabel.text = self.sortModes[indexPath.row][@"name"];
+                checkBoxCell.titleLabel.text = self.sortModes[indexPath.row][@"name"];
                 if (self.sortFilterIndex == indexPath.row) {
-                    cell.on = YES;
+                    checkBoxCell.checked = YES;
                 } else {
-                    cell.on = NO;
+                    checkBoxCell.checked = NO;
                 }
             } else {
-                cell.titleLabel.text = self.sortModes[self.sortFilterIndex][@"name"];
-                cell.on = YES;
+                checkBoxCell.titleLabel.text = self.sortModes[self.sortFilterIndex][@"name"];
+                checkBoxCell.checked = YES;
             }
-            break;
+            return checkBoxCell;
         case 3:
             if (self.showFullCategories) {
                 if (indexPath.row == self.categories.count) {
@@ -239,15 +266,13 @@
                 }
             }
             
-            cell.titleLabel.text = self.categories[indexPath.row][@"name"];
+            filterCell.titleLabel.text = self.categories[indexPath.row][@"name"];
             // use the saved data to update the switch UI
-            cell.on = [self.selectedCategories containsObject:self.categories[indexPath.row]];
-            break;
+            filterCell.on = [self.selectedCategories containsObject:self.categories[indexPath.row]];
+            return filterCell;
         default:
-            break;
+            return nil;
     }
-    
-    return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

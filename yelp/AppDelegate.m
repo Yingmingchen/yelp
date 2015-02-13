@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "SearchViewController.h"
+#import "Utils.h"
 
 @interface AppDelegate ()
 
@@ -25,7 +26,12 @@
     UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:svc];
     self.window.rootViewController = nvc;
     
-    //self.window.backgroundColor = [UIColor whiteColor];
+    UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    nvc.navigationBar.tintColor = myColor;
+    [nvc.navigationBar
+     setTitleTextAttributes:@{NSForegroundColorAttributeName : myColor}];
+    
+    self.window.backgroundColor = [UIColor whiteColor];
 
     [self.window makeKeyAndVisible];
     
