@@ -12,6 +12,7 @@
 #import "Business.h"
 #import "BusinessCell.h"
 #import "Utils.h"
+#import "SVProgressHUD.h"
 
 NSString * const kYelpConsumerKey = @"oiUpkB3MS2bufrS_c8__Hw";
 NSString * const kYelpConsumerSecret = @"tHS2EKnurGCy939lZUfX8fuYNqs";
@@ -22,12 +23,19 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+
+@property (nonatomic, strong) UIRefreshControl *tableRefreshControl;
+
 @property (nonatomic, strong) YelpClient *client;
 @property (nonatomic, strong) FiltersViewController *fvc;
-@property (nonatomic, strong) NSArray *businesses;
+@property (nonatomic, strong) NSMutableArray *businesses;
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic, strong) NSMutableDictionary *searchFilters;
 @property (nonatomic, strong) NSString *queryTerm;
+
+@property (nonatomic, assign) BOOL pullDownRefreshing;
+@property (nonatomic, assign) BOOL fetchingData;
+@property (nonatomic, assign) NSInteger fetchingCount;
 
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params;
 
@@ -46,8 +54,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         // Set myself as the receiver of the filter change event
         self.fvc.delegate = self;
         self.queryTerm = self.searchBar.text = @"Restaurants";
-        self.searchFilters = nil;
-        [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
+        self.searchFilters = [NSMutableDictionary dictionary];
+        self.fetchingData = NO;
+        self.pullDownRefreshing = NO;
+        self.fetchingCount = 0;
     }
     return self;
 }
@@ -70,6 +80,8 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     self.navigationItem.titleView = self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
+    
+    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -90,11 +102,24 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     // Disable selection highlighting color
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
+    if (indexPath.row == self.businesses.count - 1) {
+        NSMutableDictionary *filters = [self.searchFilters mutableCopy];
+        [filters setObject:@(self.businesses.count) forKey:@"offset"];
+        [self fetchBusinessesWithQuery:self.queryTerm params:filters];
+    }
+    
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+}
+
+#pragma mark - refresh handling
+
+- (void)onRefresh {
+    self.pullDownRefreshing = YES;
+    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
 #pragma mark - Filter delegate methods
@@ -154,13 +179,66 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 }
 
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params {
+    BOOL infiniteLoading = NO;
+    if ([params objectForKey:@"offset"] != nil) {
+        infiniteLoading = YES;
+    }
+    
+    if (self.fetchingData) {
+        if (self.pullDownRefreshing) {
+            [self.tableRefreshControl endRefreshing];
+            self.pullDownRefreshing = NO;
+        }
+        return;
+    }
+    self.fetchingData = YES;
+    self.fetchingCount ++;
+    
+    if (!self.pullDownRefreshing && !infiniteLoading) {
+        [SVProgressHUD show];
+    }
+    
     [self.client searchWithTerm:query params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSArray *businessDictionaries = response[@"businesses"];
-        self.businesses = [Business businessesWithDictionaries:businessDictionaries];
+        NSMutableArray *newBusiness = [Business businessesWithDictionaries:businessDictionaries];
+        NSLog(@"new business %ld", newBusiness.count);
+        if ([params objectForKey:@"offset"] != nil) {
+            // append result when doing offset searching
+            [self.businesses addObjectsFromArray:newBusiness];
+            NSLog(@"afer append %ld", self.businesses.count);
+        } else {
+            self.businesses = newBusiness;
+        }
+        if (!self.pullDownRefreshing && !infiniteLoading) {
+            [SVProgressHUD dismiss];
+        }
+        if (self.pullDownRefreshing) {
+            [self.tableRefreshControl endRefreshing];
+            self.pullDownRefreshing = NO;
+        }
         [self.tableView reloadData];
+        self.fetchingData = NO;
         
+        if (self.fetchingCount == 1) {
+            // "pull to refresh" support
+            self.tableRefreshControl = [[UIRefreshControl alloc] init];
+            [self.tableRefreshControl addTarget:self action:@selector(onRefresh) forControlEvents:UIControlEventValueChanged];
+            [self.tableView insertSubview:self.tableRefreshControl atIndex:0];
+            
+            // For infinite loading
+            UIView *tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, 30)];
+            UIActivityIndicatorView *loadingView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            [loadingView startAnimating];
+            loadingView.center = tableFooterView.center;
+            [tableFooterView addSubview:loadingView];
+            self.tableView.tableFooterView = tableFooterView;
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if (!self.pullDownRefreshing && !infiniteLoading){
+            [SVProgressHUD dismiss];
+        }
         NSLog(@"error: %@", [error description]);
+        self.fetchingData = NO;
     }];
     
 }
