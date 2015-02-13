@@ -20,6 +20,14 @@
 - (void)awakeFromNib {
     // Initialization code
     self.selectionStyle = UITableViewCellSelectionStyleNone;
+    //self.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.8];
+//    self.backgroundColor = [UIColor groupTableViewBackgroundColor];
+//    self.contentView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    
+//    self.backLayerView.layer.cornerRadius = 3;
+//    self.backLayerView.clipsToBounds = YES;
+//    self.backLayerView.layer.borderColor = [UIColor groupTableViewBackgroundColor].CGColor;
+//    self.backLayerView.layer.borderWidth = 1.0f;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

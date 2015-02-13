@@ -103,6 +103,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     }
     self.searchFilters = [filters mutableCopy];
     NSLog(@"filtering search %@", self.queryTerm);
+    NSLog(@"%@", self.searchFilters);
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
