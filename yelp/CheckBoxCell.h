@@ -23,5 +23,6 @@
 @property (nonatomic, weak) id<CheckBoxCellDelegate> delegate;
 
 - (void)setChecked:(BOOL)checked;
+- (void)setArrowDown;
 
 @end

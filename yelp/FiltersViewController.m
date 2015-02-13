@@ -236,6 +236,7 @@
             } else {
                 checkBoxCell.titleLabel.text = self.distanceChoices[self.radiusFilterIndex][@"name"];
                 checkBoxCell.checked = YES;
+                [checkBoxCell setArrowDown];
             }
             return checkBoxCell;
         case 2:
@@ -249,6 +250,7 @@
             } else {
                 checkBoxCell.titleLabel.text = self.sortModes[self.sortFilterIndex][@"name"];
                 checkBoxCell.checked = YES;
+                [checkBoxCell setArrowDown];
             }
             return checkBoxCell;
         case 3:

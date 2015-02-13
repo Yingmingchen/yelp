@@ -55,6 +55,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.fvc.delegate = self;
         self.queryTerm = self.searchBar.text = @"Restaurants";
         self.searchFilters = [NSMutableDictionary dictionary];
+        self.businesses = [NSMutableArray array];
         self.fetchingData = NO;
         self.pullDownRefreshing = NO;
         self.fetchingCount = 0;
@@ -80,6 +81,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     self.navigationItem.titleView = self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
+    self.searchBar.text = @"Restaurants";
     
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
@@ -97,7 +99,8 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     BusinessCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BusinessCell"];
-    
+    Business *business = self.businesses[indexPath.row];
+    business.index = indexPath.row + 1;
     cell.business = self.businesses[indexPath.row];
     // Disable selection highlighting color
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
