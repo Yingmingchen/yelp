@@ -69,21 +69,26 @@
     [self.tableView registerNib:[UINib nibWithNibName:@"FilterCell" bundle:nil] forCellReuseIdentifier:@"FilterCell"];
     [self.tableView registerNib:[UINib nibWithNibName:@"CheckBoxCell" bundle:nil] forCellReuseIdentifier:@"CheckBoxCell"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PlaceHolderCell" bundle:nil] forCellReuseIdentifier:@"PlaceHolderCell"];
-
+    
     self.showFullCategories = NO;
     self.showFullDistanceChoices = NO;
     self.showFullSortModes = NO;
     
     self.tableView.rowHeight = 40;
     
-    UIColor *myColor = UIColorFromRGB(0X45C7FF);
-    self.navigationController.navigationBar.tintColor = myColor;
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{NSForegroundColorAttributeName : myColor}];
-    
     self.title = @"Filters";
+    [self setNavigationBarStyle];
     //self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
+}
+
+- (void) setNavigationBarStyle {
+    UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    self.navigationController.navigationBar.backgroundColor = myColor;
+    self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -91,10 +96,7 @@
     self.showFullCategories = NO;
     self.showFullDistanceChoices = NO;
     self.showFullSortModes = NO;
-    UIColor *myColor = UIColorFromRGB(0X45C7FF);
-    self.navigationController.navigationBar.tintColor = myColor;
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{NSForegroundColorAttributeName : myColor}];
+    [self setNavigationBarStyle];
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -169,6 +171,14 @@
 {
     return [self.sectionTitles objectAtIndex:section];
 }
+
+//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+//    if (section == 0) {
+//        return 10;
+//    } else {
+//        return 10;
+//    }
+//}
 
 //// Custom the header @TODO create a separate view for it
 //-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section

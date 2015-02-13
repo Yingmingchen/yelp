@@ -81,7 +81,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     self.navigationItem.titleView = self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
-    self.searchBar.text = @"Restaurants";
+    self.searchBar.tintColor = [UIColor lightGrayColor];
+    //[[UITextField appearanceWhenContainedIn:[UISearchBar class], nil] setBackgroundColor:[UIColor redColor]];
+    
+    self.searchBar.text = self.queryTerm;
     
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
@@ -162,7 +165,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
-    searchBar.text = @"";
+    searchBar.text = self.queryTerm;
     [searchBar sizeToFit];
 }
 
