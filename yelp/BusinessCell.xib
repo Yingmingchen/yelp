@@ -38,8 +38,8 @@
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="800 market street, mission bay" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xlq-Jc-3ld">
-                        <rect key="frame" x="86" y="49" width="158.5" height="13.5"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="800 market street, mission bay" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xlq-Jc-3ld">
+                        <rect key="frame" x="86" y="49" width="226" height="13.5"/>
                         <fontDescription key="fontDescription" type="system" pointSize="11"/>
                         <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                         <nil key="highlightedColor"/>
@@ -69,6 +69,7 @@
                     <constraint firstItem="8FQ-MX-VHg" firstAttribute="top" secondItem="xlq-Jc-3ld" secondAttribute="bottom" constant="2" id="3kQ-ra-QC2"/>
                     <constraint firstItem="Wxg-sg-6ef" firstAttribute="top" secondItem="05F-8l-2rZ" secondAttribute="bottom" constant="6" id="63G-kz-68I"/>
                     <constraint firstItem="8FQ-MX-VHg" firstAttribute="leading" secondItem="k6X-fc-P39" secondAttribute="trailing" constant="8" id="Aa4-L8-H14"/>
+                    <constraint firstAttribute="trailing" secondItem="xlq-Jc-3ld" secondAttribute="trailing" constant="8" id="D9d-ww-LAn"/>
                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="k6X-fc-P39" secondAttribute="bottom" constant="8" id="Iuh-q9-i0z"/>
                     <constraint firstItem="k6X-fc-P39" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="8" id="KmT-BT-6BW"/>
                     <constraint firstItem="Wxg-sg-6ef" firstAttribute="leading" secondItem="k6X-fc-P39" secondAttribute="trailing" constant="8" id="LSc-xx-xbv"/>

@@ -12,28 +12,37 @@
 #import "PlaceHolderCell.h"
 #import "Utils.h"
 
+typedef NS_ENUM(NSInteger, FilterSectionIndex) {
+    FilterSectionIndexMostPopular = 0,
+    FilterSectionIndexDistance    = 1,
+    FilterSectionIndexSortBy      = 2,
+    FilterSectionIndexCategory    = 3
+};
+
 @interface FiltersViewController () <UITableViewDataSource, UITableViewDelegate, FilterCellDelegate, CheckBoxCellDelegate>
-
-@property (nonatomic, strong) NSArray *sectionTitles;
-
-@property (nonatomic, strong) NSArray *categories;
-@property (nonatomic, strong) NSArray *sortModes;
-@property (nonatomic, strong) NSArray *distanceChoices;
-@property (nonatomic, strong) NSArray *mostPopularChoices;
-
-@property (nonatomic, readonly) NSDictionary *filters;
-@property (nonatomic, strong) NSMutableSet *selectedCategories;
-@property (nonatomic, assign) NSInteger sortFilterIndex;
-@property (nonatomic, assign) NSInteger radiusFilterIndex;
-@property (nonatomic, assign) BOOL dealsFilter;
-
-@property (nonatomic, assign) BOOL showFullCategories;
-@property (nonatomic, assign) BOOL showFullSortModes;
-@property (nonatomic, assign) BOOL showFullDistanceChoices;
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
-- (void) initCategories;
+@property (nonatomic, strong) NSArray *sectionTitles;
+
+@property (nonatomic, readonly) NSDictionary *filters;
+
+@property (nonatomic, strong) NSArray *categories;
+@property (nonatomic, strong) NSMutableSet *selectedCategories;
+@property (nonatomic, assign) BOOL showFullCategories;
+
+@property (nonatomic, strong) NSArray *sortModes;
+@property (nonatomic, assign) NSInteger sortFilterIndex;
+@property (nonatomic, assign) BOOL showFullSortModes;
+
+@property (nonatomic, strong) NSArray *distanceChoices;
+@property (nonatomic, assign) NSInteger radiusFilterIndex;
+@property (nonatomic, assign) BOOL showFullDistanceChoices;
+
+@property (nonatomic, strong) NSArray *mostPopularChoices;
+@property (nonatomic, assign) BOOL dealsFilter;
+
+- (void) initFilteringData;
 
 @end
 
@@ -43,12 +52,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
 
     if (self) {
-        [self initCategories];
-        self.selectedCategories = [NSMutableSet set];
-        self.sectionTitles = [NSArray arrayWithObjects:@"Most Popular", @"Distance", @"Sort by", @"Category", nil];
-        self.sortFilterIndex = 0;
-        self.radiusFilterIndex = 0;
-        self.dealsFilter = NO;
+        [self initFilteringData];
     }
 
     return self;
@@ -56,30 +60,20 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    // Setup navigation items
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cancel-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
-    
-//    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"checkmark-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
     
-//    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Apply" style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
-    
+    // Setup table view
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     [self.tableView registerNib:[UINib nibWithNibName:@"FilterCell" bundle:nil] forCellReuseIdentifier:@"FilterCell"];
     [self.tableView registerNib:[UINib nibWithNibName:@"CheckBoxCell" bundle:nil] forCellReuseIdentifier:@"CheckBoxCell"];
     [self.tableView registerNib:[UINib nibWithNibName:@"PlaceHolderCell" bundle:nil] forCellReuseIdentifier:@"PlaceHolderCell"];
-    
-    self.showFullCategories = NO;
-    self.showFullDistanceChoices = NO;
-    self.showFullSortModes = NO;
-    
     self.tableView.rowHeight = 40;
     
     self.title = @"Filters";
     [self setNavigationBarStyle];
-    //self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    
 }
 
 - (void) setNavigationBarStyle {
@@ -99,13 +93,6 @@
     [self setNavigationBarStyle];
 }
 
-- (void) viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-    self.showFullCategories = NO;
-    self.showFullDistanceChoices = NO;
-    self.showFullSortModes = NO;
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -115,12 +102,12 @@
 
 - (void)filterCell:(FilterCell *)filterCell didUpdateValue:(BOOL)value {
     NSIndexPath *indexPath = [self.tableView indexPathForCell:filterCell];
-    
+
     switch (indexPath.section) {
-        case 0:
+        case FilterSectionIndexMostPopular:
             self.dealsFilter = !self.dealsFilter;
             break;
-        case 3:
+        case FilterSectionIndexCategory:
             if (value) {
                 [self.selectedCategories addObject:self.categories[indexPath.row]];
             } else {
@@ -136,34 +123,35 @@
     NSIndexPath *indexPath = [self.tableView indexPathForCell:checkBoxCell];
     
     switch (indexPath.section) {
-        case 1:
+        case FilterSectionIndexDistance:
             if (value) {
+                // Remember the selected distance filter
                 self.radiusFilterIndex = indexPath.row;
             } else {
+                // Otherwise, reset to default
                 self.radiusFilterIndex = 0;
             }
             self.showFullDistanceChoices = NO;
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
             break;
-        case 2:
+        case FilterSectionIndexSortBy:
             if (value) {
                 self.sortFilterIndex = indexPath.row;
             } else {
                 self.sortFilterIndex = 0;
             }
             self.showFullSortModes = NO;
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
             break;
         default:
             break;
     }
+
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 #pragma mark - Table methods
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    // Return the number of sections.
     return [self.sectionTitles count];
 }
 
@@ -172,46 +160,23 @@
     return [self.sectionTitles objectAtIndex:section];
 }
 
-//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-//    if (section == 0) {
-//        return 10;
-//    } else {
-//        return 10;
-//    }
-//}
-
-//// Custom the header @TODO create a separate view for it
-//-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-//{
-//    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 18)];
-//    /* Create custom view to display section header... */
-//    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, 5, tableView.frame.size.width, 18)];
-//    [label setFont:[UIFont boldSystemFontOfSize:12]];
-//    NSString *string = [self.sectionTitles objectAtIndex:section];
-//    /* Section header is in 0th index... */
-//    [label setText:string];
-//    [view addSubview:label];
-//    //[view setBackgroundColor:[UIColor colorWithRed:166/255.0 green:177/255.0 blue:186/255.0 alpha:1.0]]; //your background color...
-//    return view;
-//}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
-        case 0: // Most Popular
+        case FilterSectionIndexMostPopular: // Most Popular
             return self.mostPopularChoices.count;
-        case 1:
+        case FilterSectionIndexDistance:
             if (self.showFullDistanceChoices) {
                 return self.distanceChoices.count;
             } else {
                 return 1;
             }
-        case 2:
+        case FilterSectionIndexSortBy:
             if (self.showFullSortModes) {
                 return self.sortModes.count;
             } else {
                 return 1;
             }
-        case 3:
+        case FilterSectionIndexCategory:
             if (!self.showFullCategories) {
                 if (self.categories.count > 5)
                     return 6;
@@ -224,18 +189,20 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-//    [cell setBackgroundColor:[UIColor groupTableViewBackgroundColor]];
-    FilterCell *filterCell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
-    CheckBoxCell *checkBoxCell = [tableView dequeueReusableCellWithIdentifier:@"CheckBoxCell"];
-    checkBoxCell.delegate = self;
-    filterCell.delegate = self;
+    FilterCell *filterCell;
+    CheckBoxCell *checkBoxCell;
+    PlaceHolderCell *placeHolderCell;
 
     switch (indexPath.section) {
-        case 0: // Most Popular
+        case FilterSectionIndexMostPopular: // Most Popular
+            filterCell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
+            filterCell.delegate = self;
             filterCell.titleLabel.text = self.mostPopularChoices[indexPath.row][@"name"];
             filterCell.on = NO;
             return filterCell;
-        case 1:
+        case FilterSectionIndexDistance:
+            checkBoxCell = [tableView dequeueReusableCellWithIdentifier:@"CheckBoxCell"];
+            checkBoxCell.delegate = self;
             if (self.showFullDistanceChoices) {
                 checkBoxCell.titleLabel.text = self.distanceChoices[indexPath.row][@"name"];
                 if (self.radiusFilterIndex == indexPath.row) {
@@ -245,11 +212,12 @@
                 }
             } else {
                 checkBoxCell.titleLabel.text = self.distanceChoices[self.radiusFilterIndex][@"name"];
-                checkBoxCell.checked = YES;
                 [checkBoxCell setArrowDown];
             }
             return checkBoxCell;
-        case 2:
+        case FilterSectionIndexSortBy:
+            checkBoxCell = [tableView dequeueReusableCellWithIdentifier:@"CheckBoxCell"];
+            checkBoxCell.delegate = self;
             if (self.showFullSortModes) {
                 checkBoxCell.titleLabel.text = self.sortModes[indexPath.row][@"name"];
                 if (self.sortFilterIndex == indexPath.row) {
@@ -259,24 +227,25 @@
                 }
             } else {
                 checkBoxCell.titleLabel.text = self.sortModes[self.sortFilterIndex][@"name"];
-                checkBoxCell.checked = YES;
                 [checkBoxCell setArrowDown];
             }
             return checkBoxCell;
-        case 3:
+        case FilterSectionIndexCategory:
             if (self.showFullCategories) {
                 if (indexPath.row == self.categories.count) {
-                    PlaceHolderCell *placeHolderCell = [tableView dequeueReusableCellWithIdentifier:@"PlaceHolderCell"];
+                    placeHolderCell = [tableView dequeueReusableCellWithIdentifier:@"PlaceHolderCell"];
                     placeHolderCell.titleLabel.text = @"See Less";
                     return placeHolderCell;
                 }
             } else {
                 if (self.categories.count == indexPath.row || indexPath.row == 5) {
-                    PlaceHolderCell *placeHolderCell = [tableView dequeueReusableCellWithIdentifier:@"PlaceHolderCell"];
+                    placeHolderCell = [tableView dequeueReusableCellWithIdentifier:@"PlaceHolderCell"];
                     placeHolderCell.titleLabel.text = @"See All";
                     return placeHolderCell;
                 }
             }
+            filterCell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
+            filterCell.delegate = self;
             
             filterCell.titleLabel.text = self.categories[indexPath.row][@"name"];
             // use the saved data to update the switch UI
@@ -291,20 +260,20 @@
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     BOOL reloadNeeded = NO;
     switch (indexPath.section) {
-        case 1:
+        case FilterSectionIndexDistance:
             if (!self.showFullDistanceChoices) {
                 self.showFullDistanceChoices = YES;
                 reloadNeeded = YES;
             }
             break;
-        case 2:
+        case FilterSectionIndexSortBy:
             if (!self.showFullSortModes) {
                 self.showFullSortModes = YES;
                 reloadNeeded = YES;
             }
             break;
-        case 3:
-            if (indexPath.row + 1 == [tableView numberOfRowsInSection:3]) {
+        case FilterSectionIndexCategory:
+            if (indexPath.row + 1 == [tableView numberOfRowsInSection:FilterSectionIndexCategory]) {
                 self.showFullCategories = !self.showFullCategories;
                 reloadNeeded = YES;
             }
@@ -318,65 +287,7 @@
     }
 }
 
-//// for section border?
-//- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    
-//    if ([cell respondsToSelector:@selector(tintColor)]) {
-//        CGFloat cornerRadius = 5.f;
-//        cell.backgroundColor = UIColor.clearColor;
-//        CAShapeLayer *layer = [[CAShapeLayer alloc] init];
-//        CGMutablePathRef pathRef = CGPathCreateMutable();
-//        CGRect bounds = CGRectInset(cell.bounds, 10, 0);
-//        BOOL addLine = NO;
-//        if (indexPath.row == 0 && indexPath.row == [tableView numberOfRowsInSection:indexPath.section]-1) {
-//            CGPathAddRoundedRect(pathRef, nil, bounds, cornerRadius, cornerRadius);
-//        } else if (indexPath.row == 0) {
-//            CGPathMoveToPoint(pathRef, nil, CGRectGetMinX(bounds), CGRectGetMaxY(bounds));
-//            CGPathAddArcToPoint(pathRef, nil, CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMidX(bounds), CGRectGetMinY(bounds), cornerRadius);
-//            CGPathAddArcToPoint(pathRef, nil, CGRectGetMaxX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMidY(bounds), cornerRadius);
-//            CGPathAddLineToPoint(pathRef, nil, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
-//            addLine = YES;
-//        } else if (indexPath.row == [tableView numberOfRowsInSection:indexPath.section]-1) {
-//            CGPathMoveToPoint(pathRef, nil, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-//            CGPathAddArcToPoint(pathRef, nil, CGRectGetMinX(bounds), CGRectGetMaxY(bounds), CGRectGetMidX(bounds), CGRectGetMaxY(bounds), cornerRadius);
-//            CGPathAddArcToPoint(pathRef, nil, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds), CGRectGetMaxX(bounds), CGRectGetMidY(bounds), cornerRadius);
-//            CGPathAddLineToPoint(pathRef, nil, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-//        } else {
-//            CGPathAddRect(pathRef, nil, bounds);
-//            addLine = YES;
-//        }
-//        layer.path = pathRef;
-//        CFRelease(pathRef);
-//        //set the border color
-//        layer.strokeColor = [UIColor lightGrayColor].CGColor;
-//        //set the border width
-//        layer.lineWidth = 1;
-//        layer.fillColor = [UIColor colorWithWhite:1.f alpha:1.0f].CGColor;
-//        
-//        
-//        if (addLine == YES) {
-//            CALayer *lineLayer = [[CALayer alloc] init];
-//            CGFloat lineHeight = (1.f / [UIScreen mainScreen].scale);
-//            lineLayer.frame = CGRectMake(CGRectGetMinX(bounds), bounds.size.height-lineHeight, bounds.size.width, lineHeight);
-//            lineLayer.backgroundColor = tableView.separatorColor.CGColor;
-//            [layer addSublayer:lineLayer];
-//        }
-//        
-//        UIView *testView = [[UIView alloc] initWithFrame:bounds];
-//        [testView.layer insertSublayer:layer atIndex:0];
-//        testView.backgroundColor = UIColor.clearColor;
-//        cell.backgroundView = testView;
-//    }
-//}
-
 #pragma mark - private methods
-
-- (NSInteger)getFilterSectionIndex:(NSString *)sectionTitle {
-    NSInteger index = [self.sectionTitles indexOfObject:sectionTitle];
-    // could be NSNotFound
-    return index;
-}
 
 - (NSDictionary *)filters {
     NSMutableDictionary *filters = [NSMutableDictionary dictionary];
@@ -393,7 +304,6 @@
     
     [filters setObject:@(self.sortFilterIndex) forKey:@"sort"];
     NSInteger radiusInMeter = [self.distanceChoices[self.radiusFilterIndex][@"code"] integerValue];
-    NSLog(@"radiusMeter %ld", radiusInMeter);
     [filters setObject:@(radiusInMeter) forKey:@"radius_filter"];
     if (self.dealsFilter) {
         [filters setObject:@"true" forKey:@"deals_filter"];
@@ -412,7 +322,17 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)initCategories {
+- (void)initFilteringData {
+    self.selectedCategories = [NSMutableSet set];
+    self.sectionTitles = [NSArray arrayWithObjects:@"Most Popular", @"Distance", @"Sort by", @"Category", nil];
+    self.sortFilterIndex = 0;
+    self.radiusFilterIndex = 0;
+    self.dealsFilter = NO;
+    
+    self.showFullCategories = NO;
+    self.showFullDistanceChoices = NO;
+    self.showFullSortModes = NO;
+    
     self.mostPopularChoices = @[@{@"name" : @"Offering a Deal", @"code": @"deals_filter"}];
     self.sortModes = @[@{@"name" : @"Best matched", @"code": @(0)},
                        @{@"name" : @"Distance", @"code": @(1)},
@@ -592,15 +512,5 @@
                             @{@"name" : @"Wraps", @"code": @"wraps" },
                             @{@"name" : @"Yugoslav", @"code": @"yugoslav" }];
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

@@ -28,21 +28,32 @@
                             <action selector="onTouch:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="qGD-LD-W90"/>
                         </connections>
                     </button>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="down4-25" translatesAutoresizingMaskIntoConstraints="NO" id="I35-LY-g0X">
+                        <rect key="frame" x="279" y="7.5" width="25" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="X96-yK-WPL"/>
+                            <constraint firstAttribute="width" constant="25" id="eje-uz-oF1"/>
+                        </constraints>
+                    </imageView>
                 </subviews>
                 <constraints>
+                    <constraint firstAttribute="trailing" secondItem="I35-LY-g0X" secondAttribute="trailing" constant="16" id="Pjf-Iv-oru"/>
                     <constraint firstAttribute="trailing" secondItem="Pet-8M-8m0" secondAttribute="trailing" constant="13" id="Tk0-rB-ZOC"/>
                     <constraint firstAttribute="centerY" secondItem="Pet-8M-8m0" secondAttribute="centerY" id="UPc-2o-qcd"/>
+                    <constraint firstAttribute="centerY" secondItem="I35-LY-g0X" secondAttribute="centerY" id="ayr-OH-buo"/>
                     <constraint firstAttribute="centerY" secondItem="fBv-Ku-18a" secondAttribute="centerY" id="cGp-gn-M0w"/>
                     <constraint firstItem="fBv-Ku-18a" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="13" id="o91-8u-Mpt"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="checkButton" destination="Pet-8M-8m0" id="6EU-kG-gpR"/>
+                <outlet property="downIconView" destination="I35-LY-g0X" id="RXm-8B-FZg"/>
                 <outlet property="titleLabel" destination="fBv-Ku-18a" id="ZE8-GD-1cj"/>
             </connections>
         </tableViewCell>
     </objects>
     <resources>
+        <image name="down4-25" width="25" height="25"/>
         <image name="unchecked-32" width="32" height="32"/>
     </resources>
 </document>
