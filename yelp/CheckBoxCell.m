@@ -34,7 +34,9 @@
 }
 
 - (IBAction)onTouch:(id)sender {
-    [self setChecked:!self.checked];
+    if (!self.checked) {
+        [self setChecked:YES];
+    }
     // Trigger the event to delegate
     [self.delegate checkBoxCell:self didUpdateValue:self.checked];
 }
