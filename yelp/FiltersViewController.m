@@ -77,9 +77,9 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
 }
 
 - (void) setNavigationBarStyle {
-    UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    //UIColor *myColor = UIColorFromRGB(0X45C7FF);
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    self.navigationController.navigationBar.backgroundColor = myColor;
+    self.navigationController.navigationBar.barTintColor = [UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];

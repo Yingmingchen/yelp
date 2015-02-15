@@ -25,6 +25,7 @@
     // Initialization code
     self.checked = NO;
     self.downIconView.hidden = YES;
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

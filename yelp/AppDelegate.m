@@ -26,9 +26,10 @@
     UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:svc];
     self.window.rootViewController = nvc;
     
-    UIColor *myColor = UIColorFromRGB(0X45C7FF);
     nvc.navigationBar.barStyle = UIBarStyleBlack;
-    nvc.navigationBar.backgroundColor = myColor;
+    //UIColor *myColor = UIColorFromRGB(0X45C7FF);
+    //nvc.navigationBar.backgroundColor = myColor;
+    nvc.navigationBar.barTintColor = [UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f];
     nvc.navigationBar.tintColor = [UIColor whiteColor];
     [nvc.navigationBar
      setTitleTextAttributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]}];

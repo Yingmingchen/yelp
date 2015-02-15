@@ -13,15 +13,17 @@
 #import "BusinessCell.h"
 #import "Utils.h"
 #import "SVProgressHUD.h"
+#import <MapKit/MapKit.h>
 
 NSString * const kYelpConsumerKey = @"oiUpkB3MS2bufrS_c8__Hw";
 NSString * const kYelpConsumerSecret = @"tHS2EKnurGCy939lZUfX8fuYNqs";
 NSString * const kYelpToken = @"g3TcGKOZKSmEDWmzRvhJX4WGxeqYij4w";
 NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
-@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate>
+@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate, MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet MKMapView *mapView;
 
 @property (nonatomic, strong) FiltersViewController *fvc;
 @property (nonatomic, strong) UISearchBar *searchBar;
@@ -37,6 +39,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, assign) BOOL isInfiniteLoading;
 @property (nonatomic, assign) BOOL enableInfiniteLoading;
 @property (nonatomic, assign) BOOL isDataFetchingTriggered;
+@property (nonatomic, assign) BOOL isMapView;
 @property (nonatomic, assign) NSInteger fetchingCount;
 
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params;
@@ -68,6 +71,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.enableInfiniteLoading = NO;
         self.tableRefreshControl = nil;
         self.infiniteLoadingView = nil;
+        self.isMapView = NO;
     }
     return self;
 }
@@ -84,12 +88,16 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     // Button to filter page
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings3-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
+    // Button to map view
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"geo_fence_filled-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onMapButton)];
     
     // Setup search bar
     self.navigationItem.titleView = self.searchBar = [[UISearchBar alloc] init];
     self.searchBar.delegate = self;
     self.searchBar.tintColor = [UIColor lightGrayColor];
     self.searchBar.text = self.queryTerm;
+    
+    self.mapView.delegate = self;
     
     // Start loading data
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
@@ -99,6 +107,56 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+#pragma mark - Map methods
+
+- (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation
+{
+    MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(userLocation.coordinate, 800, 800);
+    NSLog(@"location change");
+    [self.mapView setRegion:[self.mapView regionThatFits:region] animated:YES];
+}
+
+- (MKAnnotationView *)mapView:(MKMapView *)map viewForAnnotation:(id <MKAnnotation>)annotation
+{
+    static NSString *AnnotationViewID = @"MKAnnotationView";
+    
+    MKAnnotationView *annotationView = (MKAnnotationView *)[self.mapView dequeueReusableAnnotationViewWithIdentifier:AnnotationViewID];
+    
+    if (annotationView == nil)
+    {
+        annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationViewID];
+    }
+    
+    annotationView.image = [UIImage imageNamed:@"location-24"];
+    annotationView.canShowCallout = YES;
+    //annotationView.animatesDrop = YES;
+    annotationView.annotation = annotation;
+    
+    return annotationView;
+}
+
+// when user selects standard annotation view, add the callout annotation and select it
+//
+//- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view
+//{
+//    if([view.annotation isKindOfClass:[CustomAnnotation class]]) {
+//        CalloutAnnotation *calloutAnnotation = [[CalloutAnnotation alloc] initForAnnotation:view.annotation];
+//        [mapView addAnnotation:calloutAnnotation];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            [mapView selectAnnotation:calloutAnnotation animated:YES];
+//        });
+//    }
+//}
+//
+//// when user deselects callout annotation view (i.e. taps anywhere other than the callout annotation), remove the callout annotation
+//
+//- (void)mapView:(MKMapView *)mapView didDeselectAnnotationView:(MKAnnotationView *)view
+//{
+//    if([view.annotation isKindOfClass:[CalloutAnnotation class]]) {
+//        [mapView removeAnnotation:view.annotation];
+//    }
+//}
 
 #pragma mark - Table methods
 
@@ -173,6 +231,27 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     [self presentViewController:nvc animated:YES completion:nil];
 }
 
+- (void)onMapButton {
+    NSLog (@"map");
+    [UIView transitionWithView:self.view
+                      duration:1.0
+                       options:UIViewAnimationOptionTransitionFlipFromBottom//UIViewAnimationOptionTransitionFlipFromLeft
+                    animations:^{
+                        self.tableView.hidden = !self.isMapView;
+                        self.mapView.hidden = self.isMapView;
+                    } completion:nil
+     ];
+    if (self.isMapView) {
+        [self.navigationItem.rightBarButtonItem setImage:[UIImage imageNamed:@"geo_fence_filled-25"]];
+    } else {
+        [self.navigationItem.rightBarButtonItem setImage:[UIImage imageNamed:@"align_justify-25"]];
+    }
+    
+    self.isMapView = !self.isMapView;
+    //[[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
+    //[self setNeedsStatusBarAppearanceUpdate];
+}
+
 - (void)onPullDownRefresh {
     if (!self.isDataFetchingTriggered) {
         self.isPullDownRefreshing = YES;
@@ -225,6 +304,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     // Setup pulldown refresh and infinite loading UI
     if (self.fetchingCount == 1) {
+        self.mapView.hidden = YES;
         [self initAutoLoadingUISupport];
     }
 }
@@ -241,6 +321,11 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     // Make the API call
     [self.client searchWithTerm:query params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSArray *businessDictionaries = response[@"businesses"];
+
+        NSDictionary *regionData = response[@"region"];
+        [self setMapViewRegion:regionData];
+        
+        NSLog(@"response %@", response);
         NSMutableArray *newBusiness = [Business businessesWithDictionaries:businessDictionaries];
         NSLog(@"new business %ld", newBusiness.count);
         // If # of the new businesses returned is less than the default limit 20, it means there is no more data
@@ -254,8 +339,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         // For fetching triggered by infinite loading we want to append new businesses on top of existing businesses
         if (self.isInfiniteLoading) {
             [self.businesses addObjectsFromArray:newBusiness];
+            [self addAnnotations:newBusiness append:YES];
         } else {
             self.businesses = newBusiness;
+            [self addAnnotations:newBusiness append:NO];
         }
         // Reload the table UI with new data
         [self.tableView reloadData];
@@ -270,6 +357,34 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.isDataFetchingTriggered = NO;
     }];
     
+}
+
+- (void)setMapViewRegion:(NSDictionary *)regionData {
+    MKCoordinateRegion region;
+    region.center.latitude = [[regionData valueForKeyPath:@"center.latitude"] floatValue];
+    region.center.longitude = [[regionData valueForKeyPath:@"center.longitude"] floatValue];
+    region.span.latitudeDelta = [[regionData valueForKeyPath:@"span.latitude_delta"] floatValue];
+    region.span.longitudeDelta = [[regionData valueForKeyPath:@"span.longitude_delta"] floatValue];
+    [self.mapView setRegion:[self.mapView regionThatFits:region] animated:YES];
+}
+
+- (void)addAnnotations:(NSArray *)businesses append:(BOOL)append {
+    if (!append) {
+        [self.mapView removeAnnotations:self.mapView.annotations];
+    }
+    
+    for (Business *business in self.businesses) {
+        CLLocationCoordinate2D  businessLocation;
+        businessLocation.latitude = business.latitude;
+        businessLocation.longitude = business.longitude;
+        MKPointAnnotation *point = [[MKPointAnnotation alloc] init];
+        point.coordinate = businessLocation;
+        point.title = business.name;
+        point.subtitle = business.categories;
+        
+        [self.mapView addAnnotation:point];
+        //[self.mapView setCenterCoordinate:mycenter];
+    }
 }
 
 @end

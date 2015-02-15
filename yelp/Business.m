@@ -37,6 +37,8 @@
         self.ratingImageUrl = dictionary[@"rating_img_url"];
         float milesPerMeter = 0.000621371;
         self.distance = [dictionary[@"distance"] integerValue] * milesPerMeter;
+        self.latitude = [[dictionary valueForKeyPath:@"location.coordinate.latitude"]  floatValue];
+        self.longitude = [[dictionary valueForKeyPath:@"location.coordinate.longitude"]  floatValue];
     }
     
     return self;

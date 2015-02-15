@@ -6,6 +6,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SearchViewController">
             <connections>
+                <outlet property="mapView" destination="8NN-2q-UGM" id="jec-7t-Lnd"/>
                 <outlet property="tableView" destination="iXy-9p-vey" id="Vjz-Nk-QvN"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -19,15 +20,22 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
+                <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="8NN-2q-UGM">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                </mapView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
+                <constraint firstItem="8NN-2q-UGM" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="1oO-jG-Q5b"/>
                 <constraint firstItem="iXy-9p-vey" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="7Xd-ha-2Ma"/>
+                <constraint firstAttribute="bottom" secondItem="8NN-2q-UGM" secondAttribute="bottom" id="GIL-0R-vTI"/>
+                <constraint firstItem="8NN-2q-UGM" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="JiB-zN-U4P"/>
                 <constraint firstAttribute="trailing" secondItem="iXy-9p-vey" secondAttribute="trailing" id="STN-hY-I05"/>
                 <constraint firstItem="iXy-9p-vey" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="Xox-59-JrG"/>
                 <constraint firstAttribute="bottom" secondItem="iXy-9p-vey" secondAttribute="bottom" id="YaN-Ej-Dfb"/>
+                <constraint firstAttribute="trailing" secondItem="8NN-2q-UGM" secondAttribute="trailing" id="twa-Xc-crI"/>
             </constraints>
-            <point key="canvasLocation" x="305" y="361"/>
+            <point key="canvasLocation" x="624" y="207"/>
         </view>
     </objects>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
