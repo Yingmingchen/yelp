@@ -14,6 +14,8 @@
 #import "Utils.h"
 #import "SVProgressHUD.h"
 #import <MapKit/MapKit.h>
+#import "BusinessAnnotation.h"
+#import "UIImageView+AFNetworking.h"
 
 NSString * const kYelpConsumerKey = @"oiUpkB3MS2bufrS_c8__Hw";
 NSString * const kYelpConsumerSecret = @"tHS2EKnurGCy939lZUfX8fuYNqs";
@@ -29,6 +31,8 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic, strong) UIRefreshControl *tableRefreshControl;
 @property (nonatomic, strong) UIActivityIndicatorView *infiniteLoadingView;
+@property (nonatomic, strong) UIImageView *myCustomImageView;
+
 
 @property (nonatomic, strong) YelpClient *client;
 @property (nonatomic, strong) NSMutableArray *businesses;
@@ -99,6 +103,8 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     
     self.mapView.delegate = self;
     
+    self.myCustomImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+    
     // Start loading data
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
@@ -119,7 +125,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 - (MKAnnotationView *)mapView:(MKMapView *)map viewForAnnotation:(id <MKAnnotation>)annotation
 {
-    static NSString *AnnotationViewID = @"MKAnnotationView";
+    static NSString *AnnotationViewID = @"BusinessAnnotationView";
     
     MKAnnotationView *annotationView = (MKAnnotationView *)[self.mapView dequeueReusableAnnotationViewWithIdentifier:AnnotationViewID];
     
@@ -133,7 +139,32 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     //annotationView.animatesDrop = YES;
     annotationView.annotation = annotation;
     
+    // Because this is an iOS app, add the detail disclosure button to display details about the annotation in another view.
+//    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+//    [rightButton addTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
+//    annotationView.rightCalloutAccessoryView = rightButton;
+//    
+//    // Add a custom image to the left side of the callout.
+//    UIImageView *myCustomImageView = [[UIImageView alloc] init];
+//    BusinessAnnotation *businessAnnotation = annotation;
+//    NSLog(@"image url %@", businessAnnotation.business.imageUrl);
+//    [myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
+//    annotationView.leftCalloutAccessoryView = myCustomImageView;
+    
     return annotationView;
+}
+
+- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view {
+    // Because this is an iOS app, add the detail disclosure button to display details about the annotation in another view.
+    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+    [rightButton addTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
+    view.rightCalloutAccessoryView = rightButton;
+    
+    // Add a custom image to the left side of the callout.
+    BusinessAnnotation *businessAnnotation = view.annotation;
+    NSLog(@"image url %@", businessAnnotation.business.imageUrl);
+    [self.myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
+    view.leftCalloutAccessoryView = self.myCustomImageView;
 }
 
 // when user selects standard annotation view, add the callout annotation and select it
@@ -377,8 +408,8 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         CLLocationCoordinate2D  businessLocation;
         businessLocation.latitude = business.latitude;
         businessLocation.longitude = business.longitude;
-        MKPointAnnotation *point = [[MKPointAnnotation alloc] init];
-        point.coordinate = businessLocation;
+        BusinessAnnotation *point = [[BusinessAnnotation alloc] initWithLocation:businessLocation];
+        point.business = business;
         point.title = business.name;
         point.subtitle = business.categories;
         
