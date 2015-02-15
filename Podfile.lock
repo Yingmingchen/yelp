@@ -23,12 +23,12 @@ PODS:
   - BDBOAuth1Manager (1.4.1):
     - AFNetworking/NSURLConnection (~> 2.4.0)
     - AFNetworking/NSURLSession (~> 2.4.0)
-  - SVProgressHUD (1.1.2)
+  - SVProgressHUD (HEAD based on 1.1.2)
 
 DEPENDENCIES:
   - AFNetworking
   - BDBOAuth1Manager (~> 1.4.0)
-  - SVProgressHUD
+  - SVProgressHUD (HEAD)
 
 SPEC CHECKSUMS:
   AFNetworking: 0aabc6fae66d6e5d039eeb21c315843c7aae51ab

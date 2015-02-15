@@ -32,6 +32,7 @@
         if (neighborhoods && neighborhoods.count) {
             neighborhood = neighborhoods[0];
         }
+        self.businessId = dictionary[@"id"];
         self.address = [NSString stringWithFormat:@"%@, %@", street, neighborhood];
         self.numReviews = [dictionary[@"review_count"] integerValue];
         self.ratingImageUrl = dictionary[@"rating_img_url"];

@@ -32,4 +32,9 @@
     return [self GET:@"search" parameters:finalParams success:success failure:failure];
 }
 
+- (AFHTTPRequestOperation *)searchBusiness:(NSString *)businessId success:(void (^)(AFHTTPRequestOperation *operation, id response))success failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure {
+    NSString *businessSearch = [NSString stringWithFormat:@"business/%@", businessId];
+    return [self GET:businessSearch parameters:nil success:success failure:failure];
+}
+
 @end

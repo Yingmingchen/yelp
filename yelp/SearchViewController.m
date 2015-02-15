@@ -22,10 +22,11 @@ NSString * const kYelpConsumerSecret = @"tHS2EKnurGCy939lZUfX8fuYNqs";
 NSString * const kYelpToken = @"g3TcGKOZKSmEDWmzRvhJX4WGxeqYij4w";
 NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
-@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate, MKMapViewDelegate>
+@interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate, MKMapViewDelegate, CLLocationManagerDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
+@property (nonatomic, strong) CLLocationManager *locationManager;
 
 @property (nonatomic, strong) FiltersViewController *fvc;
 @property (nonatomic, strong) UISearchBar *searchBar;
@@ -102,11 +103,20 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.searchBar.text = self.queryTerm;
     
     self.mapView.delegate = self;
+    self.mapView.showsUserLocation = YES;
+    
+    self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.delegate = self;
+    [self.locationManager requestAlwaysAuthorization];
     
     self.myCustomImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
     
+    [SVProgressHUD setBackgroundColor:[UIColor clearColor]];
+    [SVProgressHUD setForegroundColor:[UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f]];
+
     // Start loading data
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -118,27 +128,29 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 - (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation
 {
-    MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(userLocation.coordinate, 800, 800);
     NSLog(@"location change");
-    [self.mapView setRegion:[self.mapView regionThatFits:region] animated:YES];
+    // TODO: update the search if location is outside of current region
 }
 
 - (MKAnnotationView *)mapView:(MKMapView *)map viewForAnnotation:(id <MKAnnotation>)annotation
 {
-    static NSString *AnnotationViewID = @"BusinessAnnotationView";
-    
-    MKAnnotationView *annotationView = (MKAnnotationView *)[self.mapView dequeueReusableAnnotationViewWithIdentifier:AnnotationViewID];
-    
-    if (annotationView == nil)
-    {
-        annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationViewID];
+    static NSString *AnnotationViewID = @"BusinessAnnotation";
+    if ([annotation isKindOfClass:[BusinessAnnotation class]]) {
+        MKAnnotationView *annotationView = (MKAnnotationView *)[self.mapView dequeueReusableAnnotationViewWithIdentifier:AnnotationViewID];
+        
+        if (annotationView == nil)
+        {
+            annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationViewID];
+        }
+        
+        annotationView.image = [UIImage imageNamed:@"location-24"];
+        annotationView.canShowCallout = YES;
+        //annotationView.animatesDrop = YES;
+        annotationView.annotation = annotation;
+        return annotationView;
+    } else {
+        return nil;
     }
-    
-    annotationView.image = [UIImage imageNamed:@"location-24"];
-    annotationView.canShowCallout = YES;
-    //annotationView.animatesDrop = YES;
-    annotationView.annotation = annotation;
-    
     // Because this is an iOS app, add the detail disclosure button to display details about the annotation in another view.
 //    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
 //    [rightButton addTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
@@ -150,44 +162,33 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 //    NSLog(@"image url %@", businessAnnotation.business.imageUrl);
 //    [myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
 //    annotationView.leftCalloutAccessoryView = myCustomImageView;
-    
-    return annotationView;
 }
 
 - (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view {
-    // Because this is an iOS app, add the detail disclosure button to display details about the annotation in another view.
-    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
-    [rightButton addTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
-    view.rightCalloutAccessoryView = rightButton;
-    
     // Add a custom image to the left side of the callout.
     BusinessAnnotation *businessAnnotation = view.annotation;
     NSLog(@"image url %@", businessAnnotation.business.imageUrl);
     [self.myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
     view.leftCalloutAccessoryView = self.myCustomImageView;
+    
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(calloutTapped:)];
+    [view addGestureRecognizer:tapGesture];
 }
 
-// when user selects standard annotation view, add the callout annotation and select it
-//
-//- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view
-//{
-//    if([view.annotation isKindOfClass:[CustomAnnotation class]]) {
-//        CalloutAnnotation *calloutAnnotation = [[CalloutAnnotation alloc] initForAnnotation:view.annotation];
-//        [mapView addAnnotation:calloutAnnotation];
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [mapView selectAnnotation:calloutAnnotation animated:YES];
-//        });
+-(void)calloutTapped:(UITapGestureRecognizer *) sender
+{
+    NSLog(@"Callout was tapped");
+    
+    MKAnnotationView *view = (MKAnnotationView*)sender.view;
+    BusinessAnnotation *businessAnnotation = view.annotation;
+    NSLog(@"business id %@", businessAnnotation.business.businessId);
+    [self fetchBusiness:businessAnnotation.business.businessId];
+//    id <MKAnnotation> annotation = [view annotation];
+//    if ([annotation isKindOfClass:[MKPointAnnotation class]])
+//    {
+//        [self performSegueWithIdentifier:@"annotationDetailSegue" sender:annotation];
 //    }
-//}
-//
-//// when user deselects callout annotation view (i.e. taps anywhere other than the callout annotation), remove the callout annotation
-//
-//- (void)mapView:(MKMapView *)mapView didDeselectAnnotationView:(MKAnnotationView *)view
-//{
-//    if([view.annotation isKindOfClass:[CalloutAnnotation class]]) {
-//        [mapView removeAnnotation:view.annotation];
-//    }
-//}
+}
 
 #pragma mark - Table methods
 
@@ -244,6 +245,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.queryTerm = searchBar.text;
     [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
+    [self.view endEditing:YES];
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
@@ -251,6 +253,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
+    [self.view endEditing:YES];
     searchBar.text = self.queryTerm;
     [searchBar sizeToFit];
 }
@@ -311,7 +314,12 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     // No need to show loading spinner for pull down refresh and infinite loading since they have their own
     // loading indicators
     if (!self.isPullDownRefreshing && !self.isInfiniteLoading) {
-        [SVProgressHUD show];
+        // Delay showing the loading spinner otherwise it will jump
+        // after keyboard resigns. See https://github.com/TransitApp/SVProgressHUD/issues/125
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [SVProgressHUD showWithStatus:@"Loading..." maskType:SVProgressHUDMaskTypeGradient];
+        });
+//        [SVProgressHUD show];
     }
 }
 
@@ -342,6 +350,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 // Helper function to fetch business data via yelp API
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params {
+    if (self.isDataFetchingTriggered) {
+        return;
+    }
+    
     [self setPreLoadingState];
     
     // Set the flag to indicate an API call is trigger
@@ -386,6 +398,17 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         // @TODO: better error handling
         NSLog(@"error: %@", [error description]);
         self.isDataFetchingTriggered = NO;
+    }];
+    
+}
+
+// Helper function to fetch business data via yelp API
+- (void)fetchBusiness:(NSString *)businessId {
+    // Make the API call
+    [self.client searchBusiness:businessId success:^(AFHTTPRequestOperation *operation, id response) {
+        NSLog(@"business %@", response);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"error: %@", [error description]);
     }];
     
 }
