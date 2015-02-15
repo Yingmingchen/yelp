@@ -32,6 +32,12 @@
         if (neighborhoods && neighborhoods.count) {
             neighborhood = neighborhoods[0];
         }
+        NSArray *displayAddresses = [dictionary valueForKeyPath:@"location.display_address"];
+        
+        self.displayAddress = @"";
+        if (displayAddresses.count > 0) {
+            self.displayAddress = [displayAddresses componentsJoinedByString:@", "];
+        }
         self.businessId = dictionary[@"id"];
         self.address = [NSString stringWithFormat:@"%@, %@", street, neighborhood];
         self.numReviews = [dictionary[@"review_count"] integerValue];
@@ -40,9 +46,20 @@
         self.distance = [dictionary[@"distance"] integerValue] * milesPerMeter;
         self.latitude = [[dictionary valueForKeyPath:@"location.coordinate.latitude"]  floatValue];
         self.longitude = [[dictionary valueForKeyPath:@"location.coordinate.longitude"]  floatValue];
+        self.phoneNumber = dictionary[@"phone"];
+        [self updateReviewData:dictionary];
     }
     
     return self;
+}
+
+- (void)updateReviewData:(NSDictionary *)dictionary {
+    NSArray *reviews = dictionary[@"reviews"];
+    if (reviews && reviews.count > 0) {
+        self.reviewData = reviews[0];
+    } else {
+        self.reviewData = nil;
+    }
 }
 
 // Factory method

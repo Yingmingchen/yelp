@@ -17,11 +17,18 @@
 @property (nonatomic, strong) NSString *ratingImageUrl;
 @property (nonatomic, assign) NSInteger numReviews;
 @property (nonatomic, strong) NSString *address;
+@property (nonatomic, strong) NSString *displayAddress;
 @property (nonatomic, strong) NSString *categories;
 @property (nonatomic, assign) CGFloat distance;
 @property (nonatomic, assign) NSInteger index;
 @property (nonatomic, assign) CGFloat latitude;
 @property (nonatomic, assign) CGFloat longitude;
+@property (nonatomic, strong) NSString *phoneNumber;
+@property (nonatomic, strong) NSDictionary *reviewData;
+
+- (id)initWithDictionary:(NSDictionary *)dictionary;
+
+- (void)updateReviewData:(NSDictionary *)dictionary;
 
 + (NSMutableArray *)businessesWithDictionaries:(NSArray *)dictionaries;
 

@@ -15,6 +15,14 @@
 		963A74EF1A8F546200CED459 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 963A74EE1A8F546200CED459 /* MapKit.framework */; };
 		963A74F11A8FFA0500CED459 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 963A74F01A8FFA0500CED459 /* CoreLocation.framework */; };
 		963A74F71A902BA600CED459 /* BusinessAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 963A74F61A902BA600CED459 /* BusinessAnnotation.m */; };
+		963A74FB1A9079A400CED459 /* BusinessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 963A74F91A9079A400CED459 /* BusinessViewController.m */; };
+		963A74FC1A9079A400CED459 /* BusinessViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 963A74FA1A9079A400CED459 /* BusinessViewController.xib */; };
+		963A75001A9093F200CED459 /* MapCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 963A74FE1A9093F200CED459 /* MapCell.m */; };
+		963A75011A9093F200CED459 /* MapCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 963A74FF1A9093F200CED459 /* MapCell.xib */; };
+		963A75051A909A2500CED459 /* ContactInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 963A75031A909A2500CED459 /* ContactInfoCell.m */; };
+		963A75061A909A2500CED459 /* ContactInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 963A75041A909A2500CED459 /* ContactInfoCell.xib */; };
+		963A750A1A90A38800CED459 /* ReviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 963A75081A90A38800CED459 /* ReviewCell.m */; };
+		963A750B1A90A38800CED459 /* ReviewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 963A75091A90A38800CED459 /* ReviewCell.xib */; };
 		965683551A8B30020044F9CF /* BusinessCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 965683531A8B30020044F9CF /* BusinessCell.m */; };
 		965683561A8B30020044F9CF /* BusinessCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 965683541A8B30020044F9CF /* BusinessCell.xib */; };
 		9656835A1A8B43E90044F9CF /* FiltersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 965683581A8B43E90044F9CF /* FiltersViewController.m */; };
@@ -56,6 +64,18 @@
 		963A74F01A8FFA0500CED459 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		963A74F51A902BA600CED459 /* BusinessAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BusinessAnnotation.h; sourceTree = "<group>"; };
 		963A74F61A902BA600CED459 /* BusinessAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BusinessAnnotation.m; sourceTree = "<group>"; };
+		963A74F81A9079A400CED459 /* BusinessViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BusinessViewController.h; sourceTree = "<group>"; };
+		963A74F91A9079A400CED459 /* BusinessViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BusinessViewController.m; sourceTree = "<group>"; };
+		963A74FA1A9079A400CED459 /* BusinessViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BusinessViewController.xib; sourceTree = "<group>"; };
+		963A74FD1A9093F200CED459 /* MapCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapCell.h; sourceTree = "<group>"; };
+		963A74FE1A9093F200CED459 /* MapCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapCell.m; sourceTree = "<group>"; };
+		963A74FF1A9093F200CED459 /* MapCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MapCell.xib; sourceTree = "<group>"; };
+		963A75021A909A2500CED459 /* ContactInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContactInfoCell.h; sourceTree = "<group>"; };
+		963A75031A909A2500CED459 /* ContactInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactInfoCell.m; sourceTree = "<group>"; };
+		963A75041A909A2500CED459 /* ContactInfoCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ContactInfoCell.xib; sourceTree = "<group>"; };
+		963A75071A90A38800CED459 /* ReviewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReviewCell.h; sourceTree = "<group>"; };
+		963A75081A90A38800CED459 /* ReviewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReviewCell.m; sourceTree = "<group>"; };
+		963A75091A90A38800CED459 /* ReviewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReviewCell.xib; sourceTree = "<group>"; };
 		965683521A8B30020044F9CF /* BusinessCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BusinessCell.h; sourceTree = "<group>"; };
 		965683531A8B30020044F9CF /* BusinessCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BusinessCell.m; sourceTree = "<group>"; };
 		965683541A8B30020044F9CF /* BusinessCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BusinessCell.xib; sourceTree = "<group>"; };
@@ -130,6 +150,15 @@
 				963A74E81A8DCB2D00CED459 /* CheckBoxCell.h */,
 				963A74E91A8DCB2D00CED459 /* CheckBoxCell.m */,
 				963A74EA1A8DCB2D00CED459 /* CheckBoxCell.xib */,
+				963A74FD1A9093F200CED459 /* MapCell.h */,
+				963A74FE1A9093F200CED459 /* MapCell.m */,
+				963A74FF1A9093F200CED459 /* MapCell.xib */,
+				963A75021A909A2500CED459 /* ContactInfoCell.h */,
+				963A75031A909A2500CED459 /* ContactInfoCell.m */,
+				963A75041A909A2500CED459 /* ContactInfoCell.xib */,
+				963A75071A90A38800CED459 /* ReviewCell.h */,
+				963A75081A90A38800CED459 /* ReviewCell.m */,
+				963A75091A90A38800CED459 /* ReviewCell.xib */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -208,6 +237,9 @@
 				965683571A8B43E90044F9CF /* FiltersViewController.h */,
 				965683581A8B43E90044F9CF /* FiltersViewController.m */,
 				965683591A8B43E90044F9CF /* FiltersViewController.xib */,
+				963A74F81A9079A400CED459 /* BusinessViewController.h */,
+				963A74F91A9079A400CED459 /* BusinessViewController.m */,
+				963A74FA1A9079A400CED459 /* BusinessViewController.xib */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -326,10 +358,14 @@
 				963A74E71A8DAC5E00CED459 /* PlaceHolderCell.xib in Resources */,
 				9687F6341A8B1CAF00174784 /* LaunchScreen.xib in Resources */,
 				965683561A8B30020044F9CF /* BusinessCell.xib in Resources */,
+				963A75011A9093F200CED459 /* MapCell.xib in Resources */,
+				963A750B1A90A38800CED459 /* ReviewCell.xib in Resources */,
 				9656835B1A8B43E90044F9CF /* FiltersViewController.xib in Resources */,
 				965683601A8B4C0A0044F9CF /* FilterCell.xib in Resources */,
+				963A75061A909A2500CED459 /* ContactInfoCell.xib in Resources */,
 				9687F6311A8B1CAF00174784 /* Images.xcassets in Resources */,
 				9687F64E1A8B1DAF00174784 /* SearchViewController.xib in Resources */,
+				963A74FC1A9079A400CED459 /* BusinessViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,11 +417,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				9656835A1A8B43E90044F9CF /* FiltersViewController.m in Sources */,
+				963A75001A9093F200CED459 /* MapCell.m in Sources */,
+				963A75051A909A2500CED459 /* ContactInfoCell.m in Sources */,
 				9687F6561A8B27B800174784 /* Business.m in Sources */,
 				963A74E61A8DAC5E00CED459 /* PlaceHolderCell.m in Sources */,
+				963A750A1A90A38800CED459 /* ReviewCell.m in Sources */,
 				9687F6521A8B1F9000174784 /* YelpClient.m in Sources */,
 				963A74EB1A8DCB2D00CED459 /* CheckBoxCell.m in Sources */,
 				963A74F71A902BA600CED459 /* BusinessAnnotation.m in Sources */,
+				963A74FB1A9079A400CED459 /* BusinessViewController.m in Sources */,
 				9687F6291A8B1CAF00174784 /* AppDelegate.m in Sources */,
 				9687F64D1A8B1DAF00174784 /* SearchViewController.m in Sources */,
 				9656835F1A8B4C0A0044F9CF /* FilterCell.m in Sources */,

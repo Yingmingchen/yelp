@@ -20,11 +20,13 @@
     return self;
 }
 
-- (AFHTTPRequestOperation *)searchWithTerm:(NSString *)term params:(NSDictionary *)params success:(void (^)(AFHTTPRequestOperation *operation, id response))success failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure {
+- (AFHTTPRequestOperation *)searchWithTerm:(NSString *)term userLocation:(CLLocationCoordinate2D)userLocation params:(NSDictionary *)params success:(void (^)(AFHTTPRequestOperation *operation, id response))success failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure {
     
     // For additional parameters, see http://www.yelp.com/developers/documentation/v2/search_api
-    NSDictionary *defaultParams = @{@"term": term, @"ll" : @"37.774866,-122.394556"};
+    NSDictionary *defaultParams = @{@"term": term};
     NSMutableDictionary *finalParams = [defaultParams mutableCopy];
+    NSString *coordinate = [NSString stringWithFormat:@"%f,%f", userLocation.latitude, userLocation.longitude];
+    [finalParams setObject:coordinate forKey:@"ll"];
     if (params) {
         [finalParams addEntriesFromDictionary:params];
     }

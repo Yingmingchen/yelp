@@ -8,6 +8,7 @@
 
 #import "SearchViewController.h"
 #import "FiltersViewController.h"
+#import "BusinessViewController.h"
 #import "YelpClient.h"
 #import "Business.h"
 #import "BusinessCell.h"
@@ -29,6 +30,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
 @property (nonatomic, strong) FiltersViewController *fvc;
+@property (nonatomic, strong) BusinessViewController *bvc;
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic, strong) UIRefreshControl *tableRefreshControl;
 @property (nonatomic, strong) UIActivityIndicatorView *infiniteLoadingView;
@@ -39,6 +41,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, strong) NSMutableArray *businesses;
 @property (nonatomic, strong) NSMutableDictionary *searchFilters;
 @property (nonatomic, strong) NSString *queryTerm;
+@property (nonatomic, assign) CLLocationCoordinate2D userLocationCoordinate2D;
 
 @property (nonatomic, assign) BOOL isPullDownRefreshing;
 @property (nonatomic, assign) BOOL isInfiniteLoading;
@@ -61,10 +64,6 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     if (self) {
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
         
-        // Create the filter view controller we will use later
-        self.fvc = [[FiltersViewController alloc] init];
-        self.fvc.delegate = self;
-
         // Init local state variables
         self.queryTerm = @"Restaurants";
         self.searchFilters = [NSMutableDictionary dictionary];
@@ -77,12 +76,23 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.tableRefreshControl = nil;
         self.infiniteLoadingView = nil;
         self.isMapView = NO;
+        
+        self.locationManager = [[CLLocationManager alloc] init];
+        self.locationManager.delegate = self;
+        [self.locationManager requestAlwaysAuthorization];
+        [self.locationManager startUpdatingLocation];
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // Create the filter view controller we will use later
+    self.fvc = [[FiltersViewController alloc] init];
+    self.fvc.delegate = self;
+    
+    self.bvc = [[BusinessViewController alloc] init];
     
     // Table view setup
     self.tableView.delegate = self;
@@ -105,18 +115,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.mapView.delegate = self;
     self.mapView.showsUserLocation = YES;
     
-    self.locationManager = [[CLLocationManager alloc] init];
-    self.locationManager.delegate = self;
-    [self.locationManager requestAlwaysAuthorization];
-    
     self.myCustomImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
     
     [SVProgressHUD setBackgroundColor:[UIColor clearColor]];
     [SVProgressHUD setForegroundColor:[UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f]];
-
-    // Start loading data
-    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
-    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -125,6 +127,17 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 }
 
 #pragma mark - Map methods
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+{
+    CLLocation *currentLocation = newLocation;
+    [manager stopUpdatingLocation];
+    self.userLocationCoordinate2D = currentLocation.coordinate;
+    NSLog(@"location %@", currentLocation);
+    
+    // Start loading data
+    [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
+}
 
 - (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation
 {
@@ -143,7 +156,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
             annotationView = [[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationViewID];
         }
         
-        annotationView.image = [UIImage imageNamed:@"location-24"];
+        annotationView.image = [UIImage imageNamed:@"location-24-red"];
         annotationView.canShowCallout = YES;
         //annotationView.animatesDrop = YES;
         annotationView.annotation = annotation;
@@ -165,6 +178,12 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 }
 
 - (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view {
+    // If the annotation is the user location, just return nil.
+    if ([view.annotation isKindOfClass:[MKUserLocation class]]) {
+        NSLog(@"ignore user location");
+        return;
+    }
+
     // Add a custom image to the left side of the callout.
     BusinessAnnotation *businessAnnotation = view.annotation;
     NSLog(@"image url %@", businessAnnotation.business.imageUrl);
@@ -177,17 +196,16 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 -(void)calloutTapped:(UITapGestureRecognizer *) sender
 {
-    NSLog(@"Callout was tapped");
-    
     MKAnnotationView *view = (MKAnnotationView*)sender.view;
     BusinessAnnotation *businessAnnotation = view.annotation;
-    NSLog(@"business id %@", businessAnnotation.business.businessId);
+
+    // Trigger detail fetching
     [self fetchBusiness:businessAnnotation.business.businessId];
-//    id <MKAnnotation> annotation = [view annotation];
-//    if ([annotation isKindOfClass:[MKPointAnnotation class]])
-//    {
-//        [self performSegueWithIdentifier:@"annotationDetailSegue" sender:annotation];
-//    }
+
+    // Switch to business detail view
+    self.bvc.business = businessAnnotation.business;
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.bvc];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 #pragma mark - Table methods
@@ -220,6 +238,16 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    Business *business = self.businesses[indexPath.row];
+    self.bvc.business = business;
+    
+    NSLog(@"fetch");
+    // fetch business data
+    [self fetchBusiness:business.businessId];
+    
+    // Switch to detail view
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.bvc];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 #pragma mark - Filter view delegate methods
@@ -362,15 +390,13 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.fetchingCount ++;
     
     // Make the API call
-    [self.client searchWithTerm:query params:params success:^(AFHTTPRequestOperation *operation, id response) {
+    [self.client searchWithTerm:query userLocation:self.userLocationCoordinate2D params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSArray *businessDictionaries = response[@"businesses"];
 
         NSDictionary *regionData = response[@"region"];
         [self setMapViewRegion:regionData];
         
-        NSLog(@"response %@", response);
         NSMutableArray *newBusiness = [Business businessesWithDictionaries:businessDictionaries];
-        NSLog(@"new business %ld", newBusiness.count);
         // If # of the new businesses returned is less than the default limit 20, it means there is no more data
         // to retrieve for this search. We should disable infinite loading.
         if (newBusiness.count < 20) {
@@ -405,8 +431,16 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 // Helper function to fetch business data via yelp API
 - (void)fetchBusiness:(NSString *)businessId {
     // Make the API call
-    [self.client searchBusiness:businessId success:^(AFHTTPRequestOperation *operation, id response) {
-        NSLog(@"business %@", response);
+    NSLog(@"id %@", businessId);
+    NSString *encodedId = [businessId stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    [self.client searchBusiness:encodedId success:^(AFHTTPRequestOperation *operation, id response) {
+        //NSLog(@"business %@", response);
+        NSDictionary *businessDictionary = response;
+        if ([businessDictionary[@"id"] isEqualToString:self.bvc.business.businessId]) {
+            [self.bvc updateReviewData:businessDictionary];
+            NSLog(@"%@", response);
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"error: %@", [error description]);
     }];

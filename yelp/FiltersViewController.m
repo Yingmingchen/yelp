@@ -62,7 +62,7 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
     [super viewDidLoad];
     // Setup navigation items
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cancel-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onCancelButton)];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"checkmark-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onApplyButton)];
     
     // Setup table view
     self.tableView.delegate = self;
@@ -145,7 +145,11 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
             break;
     }
 
-    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
+//    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
+    
+    // Try to reload all the sections. If we only reload the section touched, sometimes, we
+    // had other sections showing rows from previous sections
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 #pragma mark - Table methods
