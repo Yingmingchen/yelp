@@ -19,7 +19,9 @@
 @interface FilterCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+
 @property (nonatomic, assign) BOOL on;
+
 @property (nonatomic, weak) id<FilterCellDelegate> delegate;
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated;

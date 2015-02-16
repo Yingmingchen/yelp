@@ -18,14 +18,11 @@
 @implementation FilterCell
 
 - (void)awakeFromNib {
-    // Initialization code
     self.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
 - (void)setOn:(BOOL)on {
@@ -37,9 +34,9 @@
     [self.filterSwitch setOn:on animated:animated];
 }
 
-
 - (IBAction)switchValueChanged:(id)sender {
     // Trigger the event to delegate
     [self.delegate filterCell:self didUpdateValue:self.filterSwitch.on];
 }
+
 @end

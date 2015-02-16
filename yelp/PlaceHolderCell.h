@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface PlaceHolderCell : UITableViewCell
+
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 
 @end

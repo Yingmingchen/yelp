@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+
     // Setup navigation items
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onSearchButton)];
     
@@ -44,8 +44,6 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
 
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 150;
-    
-    [self setNavigationBarStyle];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -59,7 +57,6 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
 }
 
 - (void) setNavigationBarStyle {
-    //UIColor *myColor = UIColorFromRGB(0X45C7FF);
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     self.navigationController.navigationBar.barTintColor = [UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
@@ -90,16 +87,10 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
     return 4;
 }
 
-//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-//{
-//    return [self.sectionTitles objectAtIndex:section];
-//}
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case BusinessViewSectionIndexIntro:
-            return 1;
         case BusinessViewSectionIndexContact:
-            return 1;
         case BusinessViewSectionIndexLocation:
             return 1;
         case BusinessViewSectionIndexReview:
@@ -116,8 +107,6 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     if (indexPath.section == BusinessViewSectionIndexContact) {
         NSString *phoneNumber = [@"tel://" stringByAppendingString:self.business.phoneNumber];
-        NSLog(@"call %@", phoneNumber);
-        
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:phoneNumber]];
     }
 }
@@ -126,26 +115,18 @@ typedef NS_ENUM(NSInteger, BusinessViewSectionIndex) {
     if (indexPath.section == BusinessViewSectionIndexIntro) {
         BusinessCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BusinessCell"];
         cell.business = self.business;
-        // Disable selection highlighting color
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     } else if (indexPath.section == BusinessViewSectionIndexLocation) {
         MapCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MapCell"];
         [cell setLocation:self.business];
-        // Disable selection highlighting color
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     } else if (indexPath.section == BusinessViewSectionIndexContact) {
         ContactInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ContactInfoCell"];
         cell.contentLabel.text = self.business.phoneNumber;
-        // Disable selection highlighting color
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     } else if (indexPath.section == BusinessViewSectionIndexReview) {
         ReviewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ReviewCell"];
         [cell setReviewWithDictionary:self.business.reviewData];
-        // Disable selection highlighting color
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }
     

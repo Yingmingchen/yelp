@@ -21,11 +21,12 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
 
 @interface FiltersViewController () <UITableViewDataSource, UITableViewDelegate, FilterCellDelegate, CheckBoxCellDelegate>
 
+// UI properties
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
-@property (nonatomic, strong) NSArray *sectionTitles;
-
 @property (nonatomic, readonly) NSDictionary *filters;
+
+@property (nonatomic, strong) NSArray *sectionTitles;
 
 @property (nonatomic, strong) NSArray *categories;
 @property (nonatomic, strong) NSMutableSet *selectedCategories;
@@ -77,7 +78,6 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
 }
 
 - (void) setNavigationBarStyle {
-    //UIColor *myColor = UIColorFromRGB(0X45C7FF);
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     self.navigationController.navigationBar.barTintColor = [UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
@@ -145,10 +145,8 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
             break;
     }
 
-//    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationFade];
-    
-    // Try to reload all the sections. If we only reload the section touched, sometimes, we
-    // had other sections showing rows from previous sections
+    // Try to reload all the sections. If we only reload the section touched, sometimes, we have issues
+    // where other sections showing rows from previous sections
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
@@ -166,7 +164,7 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
-        case FilterSectionIndexMostPopular: // Most Popular
+        case FilterSectionIndexMostPopular:
             return self.mostPopularChoices.count;
         case FilterSectionIndexDistance:
             if (self.showFullDistanceChoices) {
@@ -185,7 +183,6 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
                 if (self.categories.count > 5)
                     return 6;
             }
-            
             return self.categories.count + 1;
         default:
             return 0;
@@ -198,7 +195,7 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
     PlaceHolderCell *placeHolderCell;
 
     switch (indexPath.section) {
-        case FilterSectionIndexMostPopular: // Most Popular
+        case FilterSectionIndexMostPopular:
             filterCell = [tableView dequeueReusableCellWithIdentifier:@"FilterCell"];
             filterCell.delegate = self;
             filterCell.titleLabel.text = self.mostPopularChoices[indexPath.row][@"name"];
@@ -321,7 +318,7 @@ typedef NS_ENUM(NSInteger, FilterSectionIndex) {
 }
 
 - (void)onApplyButton {
-    // trigger the event
+    // trigger the event to update the filters in search view
     [self.delegate filtersViewController:self didChangeFilters:self.filters];
     [self dismissViewControllerAnimated:YES completion:nil];
 }

@@ -22,7 +22,12 @@
 @implementation ReviewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    // Round the image corner
+    self.userImage.layer.cornerRadius = 25;
+    self.userImage.clipsToBounds = YES;
+    
+    // Disable selection highlighting color
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
@@ -44,8 +49,6 @@
     
     NSDate *date = [NSDate dateWithTimeIntervalSince1970:[dictionary[@"time_created"] integerValue]];
     NSString *formattedDateString = [dateFormatter stringFromDate:date];
-    // For US English, the output may be:
-    // formattedDateString: 2001-01-02 at 13:00
     self.timeCreated.text = formattedDateString;
 }
 

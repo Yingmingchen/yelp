@@ -30,7 +30,6 @@
     if (params) {
         [finalParams addEntriesFromDictionary:params];
     }
-    NSLog(@"params: %@", finalParams);
     return [self GET:@"search" parameters:finalParams success:success failure:failure];
 }
 

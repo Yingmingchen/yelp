@@ -22,6 +22,8 @@
     // Initialization code
     self.mapView.delegate = self;
     self.mapView.showsUserLocation = YES;
+    // Disable selection highlighting color
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
@@ -42,7 +44,7 @@
 
 - (void) setLocation:(Business *)business {
     CLLocationCoordinate2D centerCoord = CLLocationCoordinate2DMake(business.latitude, business.longitude);
-    CLLocationDistance centerToBorderMeters = 1000;
+    CLLocationDistance centerToBorderMeters = 500;
     
     MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(centerCoord,
                                                                    centerToBorderMeters * 2,   //vertical span

@@ -22,12 +22,12 @@
         self.categories = [categoryNames componentsJoinedByString:@", "];
         self.name = dictionary[@"name"];
         self.imageUrl = dictionary[@"image_url"];
-        NSString *street = @"N/A";
+        NSString *street = [dictionary valueForKeyPath:@"location.cross_streets"];
         NSArray *addresses = [dictionary valueForKeyPath:@"location.address"];
         if (addresses && addresses.count > 0) {
             street = addresses[0];
         }
-        NSString *neighborhood = @"N/A";
+        NSString *neighborhood = [dictionary valueForKeyPath:@"location.city"];
         NSArray *neighborhoods = [dictionary valueForKeyPath:@"location.neighborhoods"];
         if (neighborhoods && neighborhoods.count) {
             neighborhood = neighborhoods[0];

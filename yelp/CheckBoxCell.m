@@ -11,8 +11,10 @@
 @interface CheckBoxCell ()
 
 - (IBAction)onTouch:(id)sender;
+
 @property (weak, nonatomic) IBOutlet UIImageView *downIconView;
 @property (weak, nonatomic) IBOutlet UIButton *checkButton;
+
 @property (nonatomic, assign) BOOL arrowState;
 
 @end

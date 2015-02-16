@@ -30,9 +30,4 @@
     subtitle = subtitleString;
 }
 
-//- (void)setBusiness:(Business *)business {
-//    NSLog(@"set business with %@", business.imageUrl);
-//    _business = business;
-//}
-
 @end

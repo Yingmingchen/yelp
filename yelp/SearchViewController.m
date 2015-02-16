@@ -25,10 +25,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 @interface SearchViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControlerDelegate, UISearchBarDelegate, MKMapViewDelegate, CLLocationManagerDelegate>
 
+// UI components
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
-@property (nonatomic, strong) CLLocationManager *locationManager;
-
 @property (nonatomic, strong) FiltersViewController *fvc;
 @property (nonatomic, strong) BusinessViewController *bvc;
 @property (nonatomic, strong) UISearchBar *searchBar;
@@ -36,13 +35,19 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, strong) UIActivityIndicatorView *infiniteLoadingView;
 @property (nonatomic, strong) UIImageView *myCustomImageView;
 
+// Location service
+@property (nonatomic, strong) CLLocationManager *locationManager;
 
+// API client
 @property (nonatomic, strong) YelpClient *client;
+
+// Local data variables
 @property (nonatomic, strong) NSMutableArray *businesses;
 @property (nonatomic, strong) NSMutableDictionary *searchFilters;
 @property (nonatomic, strong) NSString *queryTerm;
 @property (nonatomic, assign) CLLocationCoordinate2D userLocationCoordinate2D;
 
+// Local state flags
 @property (nonatomic, assign) BOOL isPullDownRefreshing;
 @property (nonatomic, assign) BOOL isInfiniteLoading;
 @property (nonatomic, assign) BOOL enableInfiniteLoading;
@@ -50,6 +55,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 @property (nonatomic, assign) BOOL isMapView;
 @property (nonatomic, assign) NSInteger fetchingCount;
 
+// Local functions
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params;
 - (void)setPreLoadingState;
 - (void)setPostLoadingState;
@@ -62,21 +68,25 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
+        // Create the API client
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
         
-        // Init local state variables
+        // Init local variables
+        self.tableRefreshControl = nil;
+
         self.queryTerm = @"Restaurants";
         self.searchFilters = [NSMutableDictionary dictionary];
         self.businesses = [NSMutableArray array];
+        
         self.isDataFetchingTriggered = NO;
         self.isPullDownRefreshing = NO;
         self.isInfiniteLoading = NO;
         self.fetchingCount = 0;
         self.enableInfiniteLoading = NO;
-        self.tableRefreshControl = nil;
         self.infiniteLoadingView = nil;
         self.isMapView = NO;
-        
+
+        // Start the location tracking
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
         [self.locationManager requestAlwaysAuthorization];
@@ -92,6 +102,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.fvc = [[FiltersViewController alloc] init];
     self.fvc.delegate = self;
     
+    // Create business detail view controller
     self.bvc = [[BusinessViewController alloc] init];
     
     // Table view setup
@@ -101,9 +112,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 100;
     
-    // Button to filter page
+    // Add button to filter view
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings3-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
-    // Button to map view
+    // Add button to map view
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"geo_fence_filled-25"] style:UIBarButtonItemStylePlain target:self action:@selector(onMapButton)];
     
     // Setup search bar
@@ -112,11 +123,13 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.searchBar.tintColor = [UIColor lightGrayColor];
     self.searchBar.text = self.queryTerm;
     
+    // Init the map view
     self.mapView.delegate = self;
     self.mapView.showsUserLocation = YES;
-    
+    // Create the image view which will be used in map callout
     self.myCustomImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
     
+    // Setup the loading spinner style
     [SVProgressHUD setBackgroundColor:[UIColor clearColor]];
     [SVProgressHUD setForegroundColor:[UIColor  colorWithRed:184.0f/255.0f green:11.0f/255.0f blue:4.0f/255.0f alpha:1.0f]];
 }
@@ -126,25 +139,26 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Map methods
+#pragma mark - Location manager methods
 
+// Get the user location and then start fetching data based on user current location
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
     CLLocation *currentLocation = newLocation;
     [manager stopUpdatingLocation];
     self.userLocationCoordinate2D = currentLocation.coordinate;
-    NSLog(@"location %@", currentLocation);
-    
     // Start loading data
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
+#pragma mark - Map methods
+
 - (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation
 {
-    NSLog(@"location change");
     // TODO: update the search if location is outside of current region
 }
 
+// Customize the annotation view for businesses
 - (MKAnnotationView *)mapView:(MKMapView *)map viewForAnnotation:(id <MKAnnotation>)annotation
 {
     static NSString *AnnotationViewID = @"BusinessAnnotation";
@@ -158,54 +172,28 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         
         annotationView.image = [UIImage imageNamed:@"location-24-red"];
         annotationView.canShowCallout = YES;
-        //annotationView.animatesDrop = YES;
         annotationView.annotation = annotation;
         return annotationView;
     } else {
         return nil;
     }
-    // Because this is an iOS app, add the detail disclosure button to display details about the annotation in another view.
-//    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
-//    [rightButton addTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
-//    annotationView.rightCalloutAccessoryView = rightButton;
-//    
-//    // Add a custom image to the left side of the callout.
-//    UIImageView *myCustomImageView = [[UIImageView alloc] init];
-//    BusinessAnnotation *businessAnnotation = annotation;
-//    NSLog(@"image url %@", businessAnnotation.business.imageUrl);
-//    [myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
-//    annotationView.leftCalloutAccessoryView = myCustomImageView;
 }
 
+// Show customized callout for each business annotation
 - (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view {
     // If the annotation is the user location, just return nil.
     if ([view.annotation isKindOfClass:[MKUserLocation class]]) {
-        NSLog(@"ignore user location");
         return;
     }
 
     // Add a custom image to the left side of the callout.
     BusinessAnnotation *businessAnnotation = view.annotation;
-    NSLog(@"image url %@", businessAnnotation.business.imageUrl);
     [self.myCustomImageView setImageWithURL:[NSURL URLWithString:businessAnnotation.business.imageUrl]];
     view.leftCalloutAccessoryView = self.myCustomImageView;
-    
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(calloutTapped:)];
+
+    // Setup listener for tapping on callout
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(onAnnotationCalloutTapped:)];
     [view addGestureRecognizer:tapGesture];
-}
-
--(void)calloutTapped:(UITapGestureRecognizer *) sender
-{
-    MKAnnotationView *view = (MKAnnotationView*)sender.view;
-    BusinessAnnotation *businessAnnotation = view.annotation;
-
-    // Trigger detail fetching
-    [self fetchBusiness:businessAnnotation.business.businessId];
-
-    // Switch to business detail view
-    self.bvc.business = businessAnnotation.business;
-    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.bvc];
-    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 #pragma mark - Table methods
@@ -220,10 +208,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     business.index = indexPath.row + 1;
     cell.business = self.businesses[indexPath.row];
     
-    // Disable selection highlighting color
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    
-    // Trigger infinite loading if needed when reach the last row
+    // Trigger infinite loading if needed when reaching the last row
     if ((indexPath.row == self.businesses.count - 1) && self.enableInfiniteLoading && !self.isDataFetchingTriggered) {
         // Create filters to include "offset" setting
         NSMutableDictionary *filters = [self.searchFilters mutableCopy];
@@ -236,13 +221,13 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     return cell;
 }
 
+// Switch to business detail view when row selected
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     Business *business = self.businesses[indexPath.row];
     self.bvc.business = business;
     
-    NSLog(@"fetch");
-    // fetch business data
+    // fetch individual business data to get review info
     [self fetchBusiness:business.businessId];
     
     // Switch to detail view
@@ -255,7 +240,6 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 - (void)filtersViewController:(FiltersViewController *)filterViewController didChangeFilters:(NSDictionary *)filters {
     // Save the filters to local property
     self.searchFilters = [filters mutableCopy];
-    NSLog(@"%@", self.searchFilters);
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
 
@@ -268,7 +252,6 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    NSLog(@"search with %@", searchBar.text);
     // Get the queryTerm from search bar text
     self.queryTerm = searchBar.text;
     [searchBar setShowsCancelButton:NO animated:YES];
@@ -288,16 +271,17 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 #pragma mark - private methods
 
+// Switch to filter view
 - (void)onFilterButton {
     UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.fvc];
     [self presentViewController:nvc animated:YES completion:nil];
 }
 
+// Switch between map view and list view
 - (void)onMapButton {
-    NSLog (@"map");
     [UIView transitionWithView:self.view
                       duration:1.0
-                       options:UIViewAnimationOptionTransitionFlipFromBottom//UIViewAnimationOptionTransitionFlipFromLeft
+                       options:self.isMapView ? UIViewAnimationOptionTransitionFlipFromTop :UIViewAnimationOptionTransitionFlipFromBottom
                     animations:^{
                         self.tableView.hidden = !self.isMapView;
                         self.mapView.hidden = self.isMapView;
@@ -310,15 +294,32 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     }
     
     self.isMapView = !self.isMapView;
-    //[[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
-    //[self setNeedsStatusBarAppearanceUpdate];
 }
 
+// Pull down support
 - (void)onPullDownRefresh {
     if (!self.isDataFetchingTriggered) {
         self.isPullDownRefreshing = YES;
         [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
     }
+}
+
+// Switch to business detail view when callout is tapped
+-(void)onAnnotationCalloutTapped:(UITapGestureRecognizer *) sender
+{
+    MKAnnotationView *view = (MKAnnotationView*)sender.view;
+    BusinessAnnotation *businessAnnotation = view.annotation;
+
+    // Dismiss callout
+    [self.mapView deselectAnnotation:businessAnnotation animated:NO];
+    
+    // Make API call to get business detail
+    [self fetchBusiness:businessAnnotation.business.businessId];
+    
+    // Switch to business detail view with the data we have
+    self.bvc.business = businessAnnotation.business;
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:self.bvc];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 // Helper function to setup the UI for pull to refresh and infinite loading
@@ -337,21 +338,20 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.enableInfiniteLoading = YES;
 }
 
-// Set the UI loading indicator state if needed before triggering loading
+// Set the UI loading indicator state if needed before making searching API calls
 - (void)setPreLoadingState {
-    // No need to show loading spinner for pull down refresh and infinite loading since they have their own
-    // loading indicators
+    // No need to show loading spinner for pull down refresh and infinite loading
+    // since they have their own loading indicators
     if (!self.isPullDownRefreshing && !self.isInfiniteLoading) {
-        // Delay showing the loading spinner otherwise it will jump
+        // Delay showing the loading spinner otherwise it will move down a little bit
         // after keyboard resigns. See https://github.com/TransitApp/SVProgressHUD/issues/125
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [SVProgressHUD showWithStatus:@"Loading..." maskType:SVProgressHUDMaskTypeGradient];
         });
-//        [SVProgressHUD show];
     }
 }
 
-// Set the UI loading indicator state if needed after data returned from API call
+// Clear the UI loading indicator state if needed after API call returns
 - (void)setPostLoadingState {
     // Hide loading spinner
     if (!self.isPullDownRefreshing && !self.isInfiniteLoading) {
@@ -369,7 +369,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         self.isInfiniteLoading = NO;
     }
     
-    // Setup pulldown refresh and infinite loading UI
+    // Setup pulldown refresh and infinite loading UI if we haven't done so
     if (self.fetchingCount == 1) {
         self.mapView.hidden = YES;
         [self initAutoLoadingUISupport];
@@ -378,13 +378,14 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
 
 // Helper function to fetch business data via yelp API
 - (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params {
+    // Don't trigger multiple API calls at the same time
     if (self.isDataFetchingTriggered) {
         return;
     }
     
     [self setPreLoadingState];
     
-    // Set the flag to indicate an API call is trigger
+    // Set the flag to indicate an API call is on the fly
     self.isDataFetchingTriggered = YES;
 
     self.fetchingCount ++;
@@ -392,13 +393,13 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     // Make the API call
     [self.client searchWithTerm:query userLocation:self.userLocationCoordinate2D params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSArray *businessDictionaries = response[@"businesses"];
-
         NSDictionary *regionData = response[@"region"];
+        // Setup the map region based on the result
         [self setMapViewRegion:regionData];
         
         NSMutableArray *newBusiness = [Business businessesWithDictionaries:businessDictionaries];
         // If # of the new businesses returned is less than the default limit 20, it means there is no more data
-        // to retrieve for this search. We should disable infinite loading.
+        // to retrieve for this search. Will disable infinite loading in that case.
         if (newBusiness.count < 20) {
             self.enableInfiniteLoading = NO;
         } else {
@@ -425,26 +426,20 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         NSLog(@"error: %@", [error description]);
         self.isDataFetchingTriggered = NO;
     }];
-    
 }
 
-// Helper function to fetch business data via yelp API
+// Helper function to fetch individual business data via yelp API
 - (void)fetchBusiness:(NSString *)businessId {
-    // Make the API call
-    NSLog(@"id %@", businessId);
     NSString *encodedId = [businessId stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
     [self.client searchBusiness:encodedId success:^(AFHTTPRequestOperation *operation, id response) {
-        //NSLog(@"business %@", response);
         NSDictionary *businessDictionary = response;
         if ([businessDictionary[@"id"] isEqualToString:self.bvc.business.businessId]) {
             [self.bvc updateReviewData:businessDictionary];
-            NSLog(@"%@", response);
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"error: %@", [error description]);
     }];
-    
 }
 
 - (void)setMapViewRegion:(NSDictionary *)regionData {
@@ -468,10 +463,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         BusinessAnnotation *point = [[BusinessAnnotation alloc] initWithLocation:businessLocation];
         point.business = business;
         point.title = business.name;
-        point.subtitle = business.categories;
+        point.subtitle = [NSString stringWithFormat:@"%@ - %@", business.categories, business.address];
         
         [self.mapView addAnnotation:point];
-        //[self.mapView setCenterCoordinate:mycenter];
     }
 }
 

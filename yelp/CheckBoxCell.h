@@ -19,7 +19,9 @@
 @interface CheckBoxCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+
 @property (nonatomic, assign) BOOL checked;
+
 @property (nonatomic, weak) id<CheckBoxCellDelegate> delegate;
 
 - (void)setChecked:(BOOL)checked;

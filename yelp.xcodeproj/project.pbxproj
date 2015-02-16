@@ -196,8 +196,6 @@
 				9687F6321A8B1CAF00174784 /* LaunchScreen.xib */,
 				9687F6231A8B1CAF00174784 /* Supporting Files */,
 				963A74ED1A8DE0C800CED459 /* Utils.h */,
-				963A74F51A902BA600CED459 /* BusinessAnnotation.h */,
-				963A74F61A902BA600CED459 /* BusinessAnnotation.m */,
 			);
 			path = yelp;
 			sourceTree = "<group>";
@@ -256,6 +254,8 @@
 		9687F6531A8B278800174784 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				963A74F51A902BA600CED459 /* BusinessAnnotation.h */,
+				963A74F61A902BA600CED459 /* BusinessAnnotation.m */,
 				9687F6541A8B27B800174784 /* Business.h */,
 				9687F6551A8B27B800174784 /* Business.m */,
 			);
