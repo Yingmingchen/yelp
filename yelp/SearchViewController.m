@@ -147,6 +147,7 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     CLLocation *currentLocation = newLocation;
     [manager stopUpdatingLocation];
     self.userLocationCoordinate2D = currentLocation.coordinate;
+    NSLog(@"current location %lf %lf", self.userLocationCoordinate2D.latitude, self.userLocationCoordinate2D.longitude);
     // Start loading data
     [self fetchBusinessesWithQuery:self.queryTerm params:self.searchFilters];
 }
@@ -346,7 +347,9 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
         // Delay showing the loading spinner otherwise it will move down a little bit
         // after keyboard resigns. See https://github.com/TransitApp/SVProgressHUD/issues/125
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [SVProgressHUD showWithStatus:@"Loading..." maskType:SVProgressHUDMaskTypeGradient];
+            if (self.isDataFetchingTriggered) {
+                [SVProgressHUD showWithStatus:@"Loading..." maskType:SVProgressHUDMaskTypeGradient];
+            }
         });
     }
 }
@@ -391,8 +394,10 @@ NSString * const kYelpTokenSecret = @"-O0BBLNTCMKehCgYbn6rpAnBskE";
     self.fetchingCount ++;
     
     // Make the API call
+    NSLog(@"searching with location %lf and params %@", self.userLocationCoordinate2D.latitude,  params);
     [self.client searchWithTerm:query userLocation:self.userLocationCoordinate2D params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSArray *businessDictionaries = response[@"businesses"];
+        NSLog(@"respones %ld", businessDictionaries.count);
         NSDictionary *regionData = response[@"region"];
         // Setup the map region based on the result
         [self setMapViewRegion:regionData];
