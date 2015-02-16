@@ -2,6 +2,8 @@
 
 This is a Yelp search app using the [Yelp API](http://www.yelp.com/developers/documentation/v2/search_api).
 
+It is only optimized for iPhone 6.
+
 Time spent: `25 hours`
 
 ### Features
